@@ -5,7 +5,7 @@ using System;
 
 namespace PlateDapperProject.PlateRepositories
 {
-    public class PlateRepository : IPlateRepository
+    public class PlateRepository:IPlateRepository
     {
         private readonly PlateContext _context;
 
@@ -42,31 +42,14 @@ namespace PlateDapperProject.PlateRepositories
         public async Task<object> GetAnnualTopFuelTypeAsync()
         {
             string query = @"
-    WITH FuelCounts AS (   /*Yıllara göre yakıt türü dağılımını çıkarır.*/
         SELECT 
             YEAR(LICENCEDATE) AS Year,
-            FUEL,
-            COUNT(*) AS FuelTypeCount /*O yıl içinde o yakıt türüne sahip kaç araç var, bunu sayıyoruz*/
+            Brand,
+            COUNT(*) AS VehicleCount
         FROM PLATES
-        GROUP BY YEAR(LICENCEDATE), FUEL
-    ),
-    RankedFuelCounts AS ( /*En Popüler Yakıt Türünü Bulma*/
-        SELECT 
-            Year,
-            FUEL,
-            FuelTypeCount,
-            RANK() OVER (PARTITION BY Year ORDER BY FuelTypeCount DESC) AS Rank /*o yıl içinde en popüler yakıt türünü 1. sıraya koyuyoruz.*/
-        FROM FuelCounts
-    )
-    SELECT 
-        Year,
-        FUEL AS TopFuelType,
-        FuelTypeCount
-    FROM RankedFuelCounts /*RANK() fonksiyonu ile en fazla kullanılan yakıt türünü sıralar.*/
-    WHERE Rank = 1 /*En popüler yakıt türünü seçiyoruz*/
-    ORDER BY Year;
-    ";
-
+        WHERE Brand IS NOT NULL
+        GROUP BY YEAR(LICENCEDATE), Brand
+        ORDER BY Year, VehicleCount DESC";
             var connection = _context.CreateConnection();
             var values = await connection.QueryAsync<dynamic>(query);
             return values.ToList();
@@ -93,24 +76,13 @@ COUNT(*) AS VehicleCount
         {
             string query = @"
             SELECT
-     'Fuel' AS Category, FUEL AS SubCategory, COUNT(*) AS VehicleCount
-            FROM PLATES
-            GROUP BY FUEL
-
-            UNION ALL
-
-            SELECT 
-                'ShiftType' AS Category, SHIFTTYPE AS SubCategory, COUNT(*) AS VehicleCount
-            FROM PLATES
-            GROUP BY SHIFTTYPE
-
-            UNION ALL
-
-            SELECT 
-                'CaseType' AS Category, CASETYPE AS SubCategory, COUNT(*) AS VehicleCount
-            FROM PLATES
-            GROUP BY CASETYPE;
-        ";
+    ShiftType AS Category,
+    COUNT(*) AS VehicleCount
+FROM PLATES
+WHERE ShiftType IS NOT NULL
+GROUP BY ShiftType
+ORDER BY VehicleCount DESC;
+";
             var connection = _context.CreateConnection();
             var values = await connection.QueryAsync<dynamic>(query);
             return values.ToList();
@@ -119,13 +91,13 @@ COUNT(*) AS VehicleCount
         public async Task<object> GetColorDistributionAsync()
         {
             string query = @"
-                SELECT
-                COLOR AS Color, 
-                COUNT(*) AS VehicleCount, 
-                CAST(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER () AS DECIMAL(5, 2)) AS Percentage
-            FROM PLATES
-            GROUP BY COLOR
-            ORDER BY Percentage DESC;
+SELECT 
+    Color AS Category,
+    COUNT(*) AS VehicleCount
+FROM PLATES
+WHERE Color IS NOT NULL
+GROUP BY Color
+ORDER BY VehicleCount DESC;
 ";
             var connection = _context.CreateConnection();
             var values = await connection.QueryAsync<dynamic>(query);
@@ -134,7 +106,16 @@ COUNT(*) AS VehicleCount
 
         public async Task<List<object>> GetFuelDistributionAsync()
         {
-            string query = "SELECT DISTINCT Fuel, COUNT(*) AS VehicleCount FROM PLATES GROUP BY Fuel";
+            string query = @"
+SELECT 
+    Fuel AS Category,
+    COUNT(*) AS VehicleCount,
+    (COUNT(*) * 100.0 / (SELECT COUNT(*) FROM PLATES)) AS Percentage
+FROM PLATES
+WHERE Fuel IS NOT NULL
+GROUP BY Fuel
+ORDER BY VehicleCount DESC;
+";
             var connection = _context.CreateConnection();
             var values = await connection.QueryAsync<dynamic>(query);
             return values.ToList();
@@ -143,10 +124,15 @@ COUNT(*) AS VehicleCount
         public async Task<object> GetFuelDistributionByYearAsync()
         {
             string query = @"
-            SELECT Year_, Fuel, COUNT(*) AS VehicleCount
-            FROM PLATES
-            GROUP BY Year_, Fuel
-            ORDER BY Year_, Fuel";
+        SELECT 
+            YEAR(LicenceDate) AS Year,
+            Fuel AS Category,
+            COUNT(*) AS VehicleCount
+        FROM PLATES
+        WHERE Fuel IS NOT NULL
+        GROUP BY YEAR(LicenceDate), Fuel
+        ORDER BY Year, VehicleCount DESC
+";
             var connection = _context.CreateConnection();
             var values = await connection.QueryAsync<dynamic>(query);
             return values.ToList();
@@ -155,11 +141,15 @@ COUNT(*) AS VehicleCount
         public async Task<object> GetMonthlyVehicleRegistrationsByAllBrandsAsync()
         {
             string query = @"
-SELECT Brand, MONTH(LICENCEDATE) AS Month, COUNT(*) AS VehicleCount
-            FROM PLATES
-            WHERE LICENCEDATE IS NOT NULL
-            GROUP BY Brand, MONTH(LICENCEDATE)
-            ORDER BY Brand, MONTH(LICENCEDATE)";
+        SELECT 
+            YEAR(LicenceDate) AS Year,
+            MONTH(LicenceDate) AS Month,
+            Brand,
+            COUNT(*) AS VehicleCount
+        FROM PLATES
+        WHERE Brand IS NOT NULL
+        GROUP BY YEAR(LicenceDate), MONTH(LicenceDate), Brand
+        ORDER BY Year, Month, VehicleCount DESC";
             var connection = _context.CreateConnection();
             var values = await connection.QueryAsync<dynamic>(query);
             return values.ToList();
@@ -168,11 +158,14 @@ SELECT Brand, MONTH(LICENCEDATE) AS Month, COUNT(*) AS VehicleCount
         public async Task<object> GetNewVehicleRegistrationsByMonthAsync()
         {
             string query = @"
-            SELECT MONTH(LICENCEDATE) AS Month, COUNT(*) AS VehicleCount
-            FROM PLATES
-            WHERE LICENCEDATE IS NOT NULL
-            GROUP BY MONTH(LICENCEDATE)
-            ORDER BY MONTH(LICENCEDATE)";
+        SELECT 
+            YEAR(LicenceDate) AS Year,
+            MONTH(LicenceDate) AS Month,
+            COUNT(*) AS VehicleCount
+        FROM PLATES
+        WHERE LicenceDate IS NOT NULL
+        GROUP BY YEAR(LicenceDate), MONTH(LicenceDate)
+        ORDER BY Year, Month";
             var connection = _context.CreateConnection();
             var values = await connection.QueryAsync<dynamic>(query);
             return values.ToList();
@@ -250,7 +243,14 @@ SELECT Brand, MONTH(LICENCEDATE) AS Month, COUNT(*) AS VehicleCount
 
         public async Task<List<object>> GetVehicleCountByBrandAsync()
         {
-            string query = "SELECT Brand, COUNT(*) as VehicleCount FROM PLATES GROUP BY Brand";
+            string query = @"
+        SELECT 
+            Brand,
+            COUNT(*) AS VehicleCount
+        FROM PLATES
+        WHERE Brand IS NOT NULL
+        GROUP BY Brand
+        ORDER BY VehicleCount DESC";
             var connection = _context.CreateConnection();
             var values = await connection.QueryAsync<dynamic>(query);
             return values.ToList();
