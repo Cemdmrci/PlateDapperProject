@@ -1,7 +1,12 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Projects\\Udemy\\murat_yucedag\\Uygulamalarlac#\\PlateDapperProject\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{429E5C1E-5FEB-4B92-90D0-6F224D010A68}|PlateDapperProject\\PlateDapperProject.csproj|c:\\projects\\udemy\\murat_yucedag\\uygulamalarlac#\\platedapperproject\\platedapperproject\\views\\plate\\platelist.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{429E5C1E-5FEB-4B92-90D0-6F224D010A68}|PlateDapperProject\\PlateDapperProject.csproj|solutionrelative:platedapperproject\\views\\plate\\platelist.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,7 +14,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -22,6 +27,23 @@
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{0174dea2-fdbe-4ef1-8f99-c0beae78880f}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "PlateList.cshtml",
+              "DocumentMoniker": "C:\\Projects\\Udemy\\murat_yucedag\\Uygulamalarlac#\\PlateDapperProject\\PlateDapperProject\\Views\\Plate\\PlateList.cshtml",
+              "RelativeDocumentMoniker": "PlateDapperProject\\Views\\Plate\\PlateList.cshtml",
+              "ToolTip": "C:\\Projects\\Udemy\\murat_yucedag\\Uygulamalarlac#\\PlateDapperProject\\PlateDapperProject\\Views\\Plate\\PlateList.cshtml",
+              "RelativeToolTip": "PlateDapperProject\\Views\\Plate\\PlateList.cshtml",
+              "ViewState": "AQIAAC0AAAAAAAAAAAAAADoAAAAIAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-02-15T09:31:51.597Z",
+              "EditorCaption": ""
             }
           ]
         }
